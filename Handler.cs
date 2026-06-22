@@ -3,7 +3,9 @@ using LabApi.Events.Arguments.PlayerEvents;
 using LabApi.Events.CustomHandlers;
 using LabApiExtensions.Extensions;
 using MEC;
+using Mirror;
 using PlayerRoles;
+using UnityEngine;
 
 namespace KadAntiKOS;
 
@@ -88,21 +90,28 @@ internal class Handler : CustomEventsHandler
 
         if (ev.Player.IsDisarmed)
         {
-            DisarmedPlayers.DisarmedEntry entry = new((uint)ev.Player.PlayerId, (uint)ev.Attacker.PlayerId);
-            bool disarmerAttacking = DisarmedPlayers.Entries.Contains(entry);
-
-            //This might not work, needs more testing
-            if (disarmerAttacking)
+            if (ev.Player.DisarmedBy == ev.Attacker)
             {
                 CL.Info("Disarmer attacking");
                 return;
             }
 
+            if (ev.Player.DisarmedBy == null)
+                return;
+
             CL.Info("Disarmed player attacked, reducing damage");
-            ev.DamageHandler.SetDamageValue(ev.DamageHandler.GetDamageValue() * PluginMain.Instance.Config.CuffDamageResistance);
+
+            float damage = ev.DamageHandler.GetDamageValue();
+            float distance = Vector3.Distance(ev.Player.Position, ev.Player.DisarmedBy.Position);
+            float finalDamage = Mathf.Clamp(damage * (distance / PluginMain.Instance.Config.DisarmMaxDistance), 0f, damage);
+            CL.Info($"Damage {damage} | Distance {distance} | FinalDamage {finalDamage}");
+
+            ev.DamageHandler.SetDamageValue(finalDamage);
         }
         else
         {
+            if (!PluginMain.Instance.Config.EnableGrace)
+                return;
             if (Round.Duration.Minutes > PluginMain.Instance.Config.GracePeriod)
                 return;
             if (!safePlayers.Contains(ev.Player.UserId.ToString()))

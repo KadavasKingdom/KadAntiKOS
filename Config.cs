@@ -2,8 +2,10 @@
 
 public sealed class Config
 {
-    public bool Debug { get; set; }
-    public int GracePeriod { get; set; }
-    public float GraceDamageResistance { get; set; }
-    public float CuffDamageResistance { get; set; }
+    public bool Debug { get; set; } = false;
+    public bool EnableGrace { get; set; } = false;
+    public int GracePeriod { get; set; } = 5;
+    public float GraceDamageResistance { get; set; } = 0.7f;
+    public float CuffDamageResistance { get; set; } = 0.4f;
+    public float DisarmMaxDistance { get; set; } = 20;
 }
