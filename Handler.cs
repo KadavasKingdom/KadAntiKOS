@@ -103,7 +103,7 @@ internal class Handler : CustomEventsHandler
 
             float damage = ev.DamageHandler.GetDamageValue();
             float distance = Vector3.Distance(ev.Player.Position, ev.Player.DisarmedBy.Position);
-            float finalDamage = Mathf.Clamp(damage * (distance / PluginMain.Instance.Config.DisarmMaxDistance), 0f, damage);
+            float finalDamage = Mathf.Clamp(damage * (distance / PluginMain.Instance.Config.DisarmMaxDistance), damage * PluginMain.Instance.Config.CuffDamageResistance, damage);
             CL.Info($"Damage {damage} | Distance {distance} | FinalDamage {finalDamage}");
 
             ev.DamageHandler.SetDamageValue(finalDamage);
