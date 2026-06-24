@@ -129,6 +129,11 @@ internal class Handler : CustomEventsHandler
 
     public override void OnPlayerChangedRole(PlayerChangedRoleEventArgs ev)
     {
+        if (ev.NewRole.RoleTypeId == RoleTypeId.None)
+            return;
+        if (ev.NewRole.RoleTypeId == RoleTypeId.Destroyed)
+            return;
+
         RemoveFromGrace(ev.Player);
     }
 
