@@ -1,9 +1,7 @@
-﻿using InventorySystem.Disarming;
-using LabApi.Events.Arguments.PlayerEvents;
+﻿using LabApi.Events.Arguments.PlayerEvents;
 using LabApi.Events.CustomHandlers;
 using LabApiExtensions.Extensions;
 using MEC;
-using Mirror;
 using PlayerRoles;
 using UnityEngine;
 
@@ -44,11 +42,17 @@ internal class Handler : CustomEventsHandler
 
     public override void OnServerRoundStarted()
     {
+        if (!PluginMain.Instance.Config.EnableGrace)
+            return;
+
         safePlayers.Clear();
     }
 
     public override void OnPlayerSpawned(PlayerSpawnedEventArgs ev)
     {
+        if (!PluginMain.Instance.Config.EnableGrace)
+            return;
+
         Timing.CallDelayed(5f, () =>
         {
             if (ev.Player == null)
@@ -139,6 +143,9 @@ internal class Handler : CustomEventsHandler
 
     private void RemoveFromGrace(Player player)
     {
+        if (!PluginMain.Instance.Config.EnableGrace)
+            return;
+
         CL.Info("Safe player removal attemtped");
 
         if (player == null)
