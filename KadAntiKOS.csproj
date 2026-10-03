@@ -25,6 +25,7 @@
 	<!-- Nuget References -->
 	<ItemGroup>
 		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" ExcludeAssets="runtime" ReferenceOutputAssembly="false" Private="true" />
+		<PackageReference Include="Lib.Harmony" Version="2.4.2" />
 	</ItemGroup>
 	<!-- DLL References -->
 	<ItemGroup>
@@ -44,6 +45,7 @@
 		<Reference Include="UnityEngine.PhysicsModule" Private="false" />
 		<Reference Include="LabApi" Publicize="true" Private="false" />
 		<Reference Include="LabApiExtensions" Private="false" />
+		<Reference Include="HintFrameworkHub" Private="false" />
 	</ItemGroup>
 	<!-- Usings globals -->
 	<ItemGroup>

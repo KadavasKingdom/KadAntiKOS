@@ -1,4 +1,5 @@
-﻿using LabApi.Events.CustomHandlers;
+﻿using HarmonyLib;
+using LabApi.Events.CustomHandlers;
 using LabApi.Loader.Features.Plugins;
 
 namespace KadAntiKOS;
@@ -15,15 +16,22 @@ public class PluginMain : Plugin<Config>
 
     private readonly Handler labApiHandler = new();
 
+    //Patcher
+    private Harmony harmony;
+
     public override void Enable()
     {
         Instance = this;
+        harmony = new(Name);
+        harmony.PatchAll();
         CustomHandlersManager.RegisterEventsHandler(labApiHandler);
     }
 
     public override void Disable()
     {
         Instance = null;
+        harmony.UnpatchAll(Name);
+        harmony = null;
         CustomHandlersManager.UnregisterEventsHandler(labApiHandler);
     }
 }

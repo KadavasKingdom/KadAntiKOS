@@ -1,4 +1,5 @@
-﻿using LabApi.Events.Arguments.PlayerEvents;
+﻿using CustomPlayerEffects;
+using LabApi.Events.Arguments.PlayerEvents;
 using LabApi.Events.CustomHandlers;
 using LabApiExtensions.Extensions;
 using MEC;
@@ -37,14 +38,12 @@ internal class Handler : CustomEventsHandler
         ItemType.ParticleDisruptor
     };
 
-
     public List<string> safePlayers = [];
 
     public override void OnServerRoundStarted()
     {
         if (!PluginMain.Instance.Config.EnableGrace)
             return;
-
         safePlayers.Clear();
     }
 
@@ -126,10 +125,58 @@ internal class Handler : CustomEventsHandler
         }
     }
 
-    public override void OnPlayerDying(PlayerDyingEventArgs ev)
+    public override void OnPlayerDroppingItem(PlayerDroppingItemEventArgs ev)
     {
-        RemoveFromGrace(ev.Player);
+        CL.Info($"Player {ev.Player.Nickname} dropping item {ev.Item.Type}");
+        if (ev.Item.Type == ItemType.SCP1344 && ev.Player.IsDisarmed)
+        {
+            ev.IsAllowed = false;
+        }
+        base.OnPlayerDroppingItem(ev);
     }
+
+    public override void OnPlayerUncuffing(PlayerUncuffingEventArgs ev)
+    {
+        if (ev.Target == null)
+            return;
+        if (!ev.Target.IsDisarmed)
+            return;
+        if (ev.Player == null)
+            return;
+        if (ev.Target.DisarmedBy == null)
+        {
+            //NotOwnedDetaineeInteractedWith(ev);
+            return;
+        }
+        if (ev.Target.DisarmedBy == ev.Player)
+            return;
+        if (Vector3.Distance(ev.Target.DisarmedBy.Position, ev.Target.Position) > PluginMain.Instance.Config.UncuffMaxDistance)
+            return;
+        if (ev.Target.DisarmedBy.Faction == ev.Player.Faction)
+        {
+            HintFrameworkHub.HintSystem.ShowHint(ev.Player, $"<i>You cannot uncuff someone detained by your team whilst their cuffer (<b>{ev.Target.DisarmedBy.Nickname}</b>) is near-by</i>", 5f);
+            ev.IsAllowed = false;
+            base.OnPlayerUncuffing(ev);
+        }
+    }
+
+    public override void OnPlayerCuffed(PlayerCuffedEventArgs ev)
+    {
+        Timing.CallDelayed(1f, () =>
+        {
+            ev.Target.DisableEffect<SeveredEyes>();
+            ev.Target.DisableEffect<Blindness>();
+        });
+    }
+
+    private void NotOwnedDetaineeInteractedWith(PlayerUncuffingEventArgs ev)
+    {
+        ev.Target.DisarmedBy = ev.Player;
+        HintFrameworkHub.HintSystem.ShowHint(ev.Player, $"<i>You have gained ownership of <b>{ev.Target.Nickname}</b> as your detainee</i>", 5f);
+        HintFrameworkHub.HintSystem.ShowHint(ev.Target, $"<i><b>{ev.Player.Nickname}</b> has gained ownership of you as a detainee</i>", 5f);
+    }
+
+    public override void OnPlayerDying(PlayerDyingEventArgs ev) => RemoveFromGrace(ev.Player);
 
     public override void OnPlayerChangedRole(PlayerChangedRoleEventArgs ev)
     {
@@ -145,15 +192,10 @@ internal class Handler : CustomEventsHandler
     {
         if (!PluginMain.Instance.Config.EnableGrace)
             return;
-
-        CL.Info("Safe player removal attemtped");
-
         if (player == null)
             return;
         if (!safePlayers.Contains(player.UserId.ToString()))
             return;
-
-        CL.Info("Safe player removed");
 
         safePlayers.Remove(player.UserId.ToString());
     }

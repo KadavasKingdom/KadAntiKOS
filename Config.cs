@@ -8,4 +8,5 @@ public sealed class Config
     public float GraceDamageResistance { get; set; } = 0.7f;
     public float CuffDamageResistance { get; set; } = 0.4f;
     public float DisarmMaxDistance { get; set; } = 20;
+    public float UncuffMaxDistance { get; set; } = 13;
 }
